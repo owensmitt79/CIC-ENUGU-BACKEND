@@ -1,0 +1,42 @@
+# ==============================================================================
+# CIC Enugu 1995 Alumni Association Portal - Server (.gitignore)
+# ==============================================================================
+
+# Dependencies
+node_modules/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.env.local
+
+# SQLite Database Files
+prisma/*.db
+prisma/*.db-journal
+prisma/*.db-wal
+prisma/*.db-shm
+*.db
+*.db-journal
+
+# Uploaded Files (keep directory with .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build / Deployment
+dist/
+build/
+.vercel/
+coverage/

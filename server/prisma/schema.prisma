@@ -1,0 +1,203 @@
+// Prisma Schema for CIC Enugu 1995 Alumni Association Portal
+// Project: CIC-ENUGU-25-SET
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Executive Administrative Users
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  pinHash      String?
+  role         String    @default("ADMIN") // SUPERADMIN, ADMIN, EXECUTIVE
+  phone        String?
+  avatar       String?
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// 2. Global Portal & Secretariat System Configuration
+model SystemConfig {
+  id              String   @id @default("default_config")
+  associationName String   @default("CIC ALUMNI 1995 SET")
+  slogan          String   @default("Connecting the Past. Building the Future.")
+  monthlyDuesRate Float    @default(5000)
+  annualDuesRate  Float    @default(25000)
+  reunionFeeRate  Float    @default(15000)
+  activeGateway   String   @default("Paystack") // Paystack, Flutterwave, Monnify, Remita
+  gatewayMode     String   @default("Test Mode") // Test Mode, Live Mode
+  bankName        String   @default("First Heritage Bank")
+  accountNumber   String   @default("1029384756")
+  accountName     String   @default("CIC Alumni 1995 Set National")
+  ussdPrefix      String   @default("*737*50*5000#")
+  updatedAt       DateTime @updatedAt
+}
+
+// 3. Payment & Dues Categories
+model Category {
+  id          String    @id
+  name        String
+  type        String    @default("fixed") // monthly, fixed, custom
+  baseAmount  Float     @default(5000)
+  active      Boolean   @default(true)
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  payments    Payment[]
+}
+
+// 4. Financial Payment Ledger & Zero-Login Receipts
+model Payment {
+  id              String    @id @default(cuid())
+  reference       String    @unique // e.g. HAA-2026-XXXXX
+  receiptNumber   String    @unique // e.g. REC-2026-XXXX
+  name            String
+  phone           String
+  email           String
+  paymentType     String // Category name or custom description
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  selectedMonths  String? // JSON array or comma separated e.g. ["January", "February"]
+  amount          Float
+  gateway         String    @default("Paystack")
+  channel         String    @default("Debit Card") // Debit Card, Bank Transfer, Manual Entry, USSD
+  status          String    @default("Successful") // Successful, Pending, Failed
+  date            String // Formatted date string "YYYY-MM-DD HH:mm:ss"
+  timestamp       BigInt // Milliseconds epoch
+  itemDescription String?
+  notes           String?
+  recordedBy      String?   @default("Self Checkout") // Self Checkout or Admin Name/Email
+  receiptQrCode   String? // Embedded QR Code data URL
+  verifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// 5. Alumni Members Directory
+model Member {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  phone      String
+  chapter    String   @default("Enugu") // Lagos, Enugu, Abuja FCT, Diaspora, etc.
+  profession String?
+  duesStatus String   @default("Up to Date") // Up to Date, Pending, Grace Period
+  avatar     String?
+  bio        String?
+  joinYear   Int      @default(1995)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// 6. Executive Council Leadership
+model Leadership {
+  id        String   @id @default(cuid())
+  name      String
+  role      String // President, Vice President, General Secretary, etc.
+  office    String?
+  bio       String
+  image     String
+  order     Int      @default(0) // Order ranking for display hierarchy
+  email     String?
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 7. Capital School Rehabilitation Projects
+model Project {
+  id           String            @id @default(cuid())
+  title        String
+  category     String            @default("Infrastructure") // Infrastructure, Scholarship, Technology, Welfare, etc.
+  status       String            @default("active") // active, completed, paused
+  targetAmount Float             @default(0)
+  raisedAmount Float             @default(0)
+  donorCount   Int               @default(0)
+  image        String
+  description  String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  donations    ProjectDonation[]
+}
+
+// 8. Project Backers & Donors
+model ProjectDonation {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  donorName  String
+  donorEmail String?
+  donorPhone String?
+  amount     Float
+  paymentRef String?
+  date       DateTime @default(now())
+}
+
+// 9. Association Events & Reunions
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  date        String // YYYY-MM-DD
+  displayDate String?
+  time        String?
+  location    String
+  fee         Float    @default(0)
+  status      String   @default("upcoming") // upcoming, past
+  image       String?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 10. Executive Bulletins & News Announcements
+model News {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String?
+  content     String
+  category    String   @default("General")
+  date        String // YYYY-MM-DD
+  displayDate String?
+  image       String?
+  author      String   @default("National Secretariat")
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 11. Alumni Photo & Media Gallery
+model GalleryItem {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   @default("Reunions") // Reunions, Campus, Projects, Achievements
+  image     String
+  caption   String?
+  date      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 12. Secretariat Inquiry & Contact Desk
+model Message {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

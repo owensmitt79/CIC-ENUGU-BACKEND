@@ -1,0 +1,14 @@
+{
+  "name": "cic-enugu-backend-root",
+  "version": "1.0.0",
+  "description": "CIC Enugu 1995 Alumni Association Portal Backend Root",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "dev": "node --watch server/src/server.js",
+    "prisma:generate": "npm run --prefix server prisma:generate",
+    "prisma:push": "npm run --prefix server prisma:push",
+    "prisma:seed": "npm run --prefix server prisma:seed",
+    "db:setup": "npm run --prefix server db:setup",
+    "test": "node server/test-api.js"
+  }
+}
