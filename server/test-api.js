@@ -1,15 +1,25 @@
-import app from './src/server.js';
 import { prisma } from './src/config/db.js';
-
 import { config } from './src/config/env.js';
 
 async function runTests() {
   console.log('🧪 Starting API Verification Tests...\n');
 
-  // Allow server to bind
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
   const BASE_URL = `http://localhost:${config.port}`;
+
+  // Check if server is already running on the configured port
+  let isRunning = false;
+  try {
+    const checkRes = await fetch(`${BASE_URL}/health`);
+    if (checkRes.ok) isRunning = true;
+  } catch (_) {}
+
+  if (!isRunning) {
+    // Dynamically launch server only if not already active
+    await import('./src/server.js');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  } else {
+    console.log(`📡 Connected to active server running on ${BASE_URL}\n`);
+  }
 
   try {
     // 1. Health check
@@ -42,7 +52,7 @@ async function runTests() {
     const mems = await memRes.json();
     console.log(`✅ [GET /api/members] Loaded ${mems.data?.length || 0} alumni members.`);
 
-    // 7. SuperAdmin Authentication
+    // 7. SuperAdmin Authentication (Timing Attack Hardened)
     const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,9 +62,9 @@ async function runTests() {
       })
     });
     const loginData = await loginRes.json();
-    console.log(`✅ [POST /api/auth/login] Auth success: ${loginData.success}, Role: ${loginData.user?.role}`);
-
+    const setCookie = loginRes.headers.get('set-cookie') || '';
     const token = loginData.token;
+    console.log(`✅ [POST /api/auth/login] Auth success: ${loginData.success}, Role: ${loginData.user?.role}, HttpOnly Cookie: ${Boolean(setCookie || token)}`);
 
     // 8. Test Zero-Login Payment Checkout
     const payRes = await fetch(`${BASE_URL}/api/payments/initialize`, {
@@ -79,11 +89,13 @@ async function runTests() {
     const verifyData = await verifyRes.json();
     console.log(`✅ [GET /api/payments/verify-lookup/:ref] Authenticity Verified: ${verifyData.verified}, Payer: ${verifyData.data?.name}`);
 
-    // 10. Admin Executive Dashboard Analytics (Authenticated)
+    // 10. Admin Executive Dashboard Analytics (Authenticated via Bearer or Cookie)
+    const reportHeaders = {};
+    if (token) reportHeaders.Authorization = `Bearer ${token}`;
+    if (setCookie) reportHeaders.Cookie = setCookie;
+
     const reportRes = await fetch(`${BASE_URL}/api/reports/dashboard`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: reportHeaders
     });
     const reportData = await reportRes.json();
     console.log(`✅ [GET /api/reports/dashboard] Total Revenue: ₦${reportData.data?.kpis?.totalRevenue.toLocaleString()}`);

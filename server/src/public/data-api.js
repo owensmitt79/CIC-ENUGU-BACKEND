@@ -106,8 +106,8 @@
           method: 'POST',
           body: { email, password, pin }
         });
-        if (res.token && typeof localStorage !== 'undefined') {
-          localStorage.setItem('cic_admin_token', res.token);
+        // Securely store only sanitized user profile; token is kept in tamper-proof HttpOnly cookie
+        if (res.user && typeof localStorage !== 'undefined') {
           localStorage.setItem('cic_admin_user', JSON.stringify(res.user));
         }
         return res;

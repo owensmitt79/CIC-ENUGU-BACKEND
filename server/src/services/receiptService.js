@@ -54,14 +54,27 @@ export class ReceiptService {
   }
 
   /**
+   * Derive an isolated HMAC key specifically for public verification seals.
+   * Isolates the master JWT secret from public receipt calculations to prevent key reuse leaks.
+   * @returns {Buffer}
+   */
+  static getReceiptSealKey() {
+    return crypto
+      .createHmac('sha256', config.jwt.secret)
+      .update('CIC_PUBLIC_RECEIPT_INTEGRITY_SALT_V1')
+      .digest();
+  }
+
+  /**
    * Generate cryptographic HMAC signature for receipt anti-tampering
    * @param {Object} payment
    * @returns {string}
    */
   static generateSecurityHash(payment) {
     const payload = `${payment.reference}|${payment.receiptNumber}|${payment.amount}|${payment.email}|${payment.date}`;
+    const sealKey = this.getReceiptSealKey();
     return crypto
-      .createHmac('sha256', config.jwt.secret)
+      .createHmac('sha256', sealKey)
       .update(payload)
       .digest('hex')
       .substring(0, 32);
