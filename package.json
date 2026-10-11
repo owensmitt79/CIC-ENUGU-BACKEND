@@ -1,6 +1,7 @@
 {
   "name": "cic-enugu-backend-root",
   "version": "1.0.0",
+  "private": true,
   "description": "CIC Enugu 1995 Alumni Association Portal Backend Root",
   "type": "module",
   "workspaces": [
