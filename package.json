@@ -7,7 +7,7 @@
     "server"
   ],
   "scripts": {
-    "build": "npm install --prefix server && npm run --prefix server prisma:generate",
+    "build": "npm install --prefix server && npm run --prefix server prisma:generate && npm run --prefix server prisma:push",
     "postinstall": "npm install --prefix server",
     "start": "node server/src/server.js",
     "dev": "node --watch server/src/server.js",
