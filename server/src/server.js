@@ -141,8 +141,9 @@ app.use(errorHandler);
 
 // 13. Server Launch
 const PORT = config.port;
+const HOST = process.env.HOST || '0.0.0.0';
 
-const server = app.listen(PORT, async () => {
+const server = app.listen(PORT, HOST, async () => {
   try {
     await prisma.$connect();
     console.log(`\n========================================================`);
