@@ -168,6 +168,34 @@ npm test
 
 ---
 
+### Alternative: Docker Compose Quickstart
+
+Run the complete backend in an isolated, production-grade container with persistent volumes and automated health checks:
+
+```bash
+# Build and start container in detached mode
+docker compose up -d --build
+
+# Monitor live server logs
+docker compose logs -f
+
+# Check container health status
+docker compose ps
+
+# Run the 10-point test suite inside the container
+docker compose exec backend npm test
+
+# Stop the container
+docker compose down
+```
+
+> **Note:** To run with a containerized PostgreSQL instance instead of SQLite, start with the Postgres profile:
+> ```bash
+> docker compose --profile postgres up -d
+> ```
+
+---
+
 ## 5. Environment Configuration (.env)
 
 The application configuration is managed via `server/.env`. Copy from `server/.env.example` as needed:

@@ -1,11 +1,12 @@
 {
   "name": "cic-alumni-portal-backend",
   "version": "1.0.0",
+  "private": true,
   "description": "Standalone Node.js/Express REST API backend for CIC Enugu 1995 Alumni Association Portal (CIC-ENUGU-25-SET)",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "prisma db push && node prisma/seed.js && node src/server.js",
     "dev": "node --watch src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",

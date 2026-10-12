@@ -118,6 +118,26 @@ npm test
 
 ---
 
+## 🐳 Docker Deployment
+
+You can run the backend directly with Docker and Docker Compose from either the project root or the `server/` directory:
+
+```bash
+# Build and run backend container
+docker compose up -d --build
+
+# View real-time logs
+docker compose logs -f
+
+# Run tests inside container
+docker compose exec backend npm test
+
+# Stop container
+docker compose down
+```
+
+---
+
 ## 🗄️ Database Provider Switching (SQLite ➔ PostgreSQL)
 
 To switch to **PostgreSQL** in production:
